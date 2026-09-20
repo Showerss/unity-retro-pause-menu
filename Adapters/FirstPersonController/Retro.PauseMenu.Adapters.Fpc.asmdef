@@ -1,0 +1,26 @@
+{
+    "name": "Retro.PauseMenu.Adapters.Fpc",
+    "rootNamespace": "Retro.Menu.Adapters",
+    "references": [
+        "Retro.PauseMenu",
+        "FirstPersonController",
+        "Unity.InputSystem"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [
+        "RETRO_PAUSEMENU_FPC"
+    ],
+    "versionDefines": [
+        {
+            "name": "com.firstperson.controller",
+            "expression": "",
+            "define": "RETRO_PAUSEMENU_FPC"
+        }
+    ],
+    "noEngineReferences": false
+}

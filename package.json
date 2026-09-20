@@ -1,0 +1,14 @@
+{
+  "name": "com.retro.pausemenu",
+  "version": "1.0.0",
+  "displayName": "Retro Pause Menu",
+  "description": "Esc-driven pause menu with Continue / Save / Load / Options / Quit, slot-based JSON saves, and a PlayerPrefs settings store. Integrates with any game via IPauseTarget / ISaveParticipant / ISettingsTarget; optional adapter assemblies light up automatically for the First Person Controller, Retro Inventory and Retro PS1 Post-Processing packages.",
+  "unity": "6000.0",
+  "author": {
+    "name": "Phillip Banky"
+  },
+  "dependencies": {
+    "com.unity.inputsystem": "1.19.0",
+    "com.unity.ugui": "2.0.0"
+  }
+}

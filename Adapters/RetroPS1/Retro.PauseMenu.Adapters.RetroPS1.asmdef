@@ -1,0 +1,27 @@
+{
+    "name": "Retro.PauseMenu.Adapters.RetroPS1",
+    "rootNamespace": "Retro.Menu.Adapters",
+    "references": [
+        "Retro.PauseMenu",
+        "Retro.PS1PostProcess",
+        "Unity.RenderPipelines.Universal.Runtime",
+        "Unity.RenderPipelines.Core.Runtime"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [
+        "RETRO_PAUSEMENU_PS1"
+    ],
+    "versionDefines": [
+        {
+            "name": "com.retro.ps1postprocess",
+            "expression": "",
+            "define": "RETRO_PAUSEMENU_PS1"
+        }
+    ],
+    "noEngineReferences": false
+}

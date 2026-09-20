@@ -1,0 +1,25 @@
+{
+    "name": "Retro.PauseMenu.Adapters.Inventory",
+    "rootNamespace": "Retro.Menu.Adapters",
+    "references": [
+        "Retro.PauseMenu",
+        "Retro.Inventory"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [
+        "RETRO_PAUSEMENU_INVENTORY"
+    ],
+    "versionDefines": [
+        {
+            "name": "com.retro.inventory",
+            "expression": "",
+            "define": "RETRO_PAUSEMENU_INVENTORY"
+        }
+    ],
+    "noEngineReferences": false
+}
