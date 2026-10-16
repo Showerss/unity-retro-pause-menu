@@ -94,6 +94,13 @@ it and nothing breaks.
 | `FirstPersonControllerAdapter` | `com.firstperson.controller` | Player | Disables controller + PlayerInput on pause; applies FOV and mouse sensitivity |
 | `InventorySaveParticipant` | `com.retro.inventory` | The `InventorySystem` object | Writes inventory contents into the save file |
 | `RetroPS1SettingsTarget` | `com.retro.ps1postprocess` | Any scene object | Drives pixel height, scanlines and vignette from the options sliders |
+| `LightSwitchSaveState` | `com.firstperson.controller` | A `LightSwitch` with a `SaveableObject` | Saves whether the lamp is lit |
+| `QuestSaveParticipant` | `com.retro.questsystem` | The `QuestManager` object | Saves chapter, quest and objective progress |
+| `QuestAutosave` | `com.retro.questsystem` | The `QuestManager` object | Autosaves on objective / quest / chapter completion |
+| `StoryFlagsSaveParticipant` | `com.retro.questsystem` | A persistent object | Saves every story flag |
+| `SequenceSaveState` | `com.retro.questsystem` | A `GameSequence` with a `SaveableObject` | Saves whether the sequence finished |
+
+With the quest system installed, sequences also never start while a save loads, autosaves wait for playing sequences, and flag triggers re-check after a load. No setup needed.
 
 > **Note on `RetroPS1SettingsTarget`:** the render feature's settings live on a
 > `UniversalRendererData` asset. Writing them in the Editor dirties that asset on disk and
@@ -132,7 +139,20 @@ SaveSystem.Delete(0);
 ```
 
 `Save` walks every registered `ISaveParticipant`, collects its `Capture()` blob under its
-`SaveKey`, and writes one JSON file per slot.
+`SaveKey`, and writes one JSON file per slot. `SaveSystem.AutosaveSlot` (-1) writes
+`autosave.json`, separate from the manual slots.
+
+### Scene-aware saving (optional)
+
+For a game with a persistent Boot scene that loads gameplay scenes additively:
+
+1. Put `GameSaveService` on a persistent object in Boot. The menu's Load now reloads the saved
+   scene and restores it before anything in it runs `Start`.
+2. Put `WorldStateSaveParticipant` in each gameplay scene, and a `SaveableObject` on every object
+   whose state should survive (pickups, lamps, revealed or moved props). Add a component that
+   implements `ISaveableState` next to it to save more.
+3. Call `GameSaveService.RequestAutosave()` whenever progress is made (or use `QuestAutosave`),
+   and add an `AutosaveIndicator` to the menu canvas.
 
 ## License
 

@@ -5,6 +5,15 @@ All notable changes to this package will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] - 2026-10-16
+
+### Added
+- `GameSaveService`: scene-aware loading for games with a persistent Boot scene. Loading reloads the saved scene and restores it before `Start`, so taken pickups stay gone and one-time events don't replay. Queued autosaves (`RequestAutosave`) wait until the game isn't paused and no `AddAutosaveBlocker` holds them back. Switches for the Boot build index, autosave on/off and reload-vs-in-place loading; `IsRestoring`, `Restored` and `Autosaved`.
+- `SaveableObject`, `ISaveableState` and `WorldStateSaveParticipant`: per-object world state (destroyed, shown, transform, and any `ISaveableState` component).
+- `AutosaveIndicator`: a "Saving..." note that fades out after each autosave.
+- QuestSystem adapter: `QuestAutosave` (autosave on objective, quest and chapter completion, each switchable), `StoryFlagsSaveParticipant`, `SequenceSaveState`, and hooks that stop sequences starting mid-load, hold autosaves while a sequence plays and re-check flag triggers after a load.
+- FirstPersonController adapter: `LightSwitchSaveState`.
+
 ## [1.1.0] - 2026-10-16
 
 ### Added
