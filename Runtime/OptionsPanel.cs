@@ -13,6 +13,8 @@ namespace Retro.Menu
         [Header("Comfort")]
         [SerializeField] private Slider _fovSlider;
         [SerializeField] private TextMeshProUGUI _fovValue;
+        [Tooltip("Lowest and highest field of view the slider offers. Raise the minimum for players prone to motion sickness.")]
+        [SerializeField] private Vector2 _fovRange = new Vector2(50f, 100f);
         [SerializeField] private Slider _sensitivitySlider;
         [SerializeField] private TextMeshProUGUI _sensitivityValue;
 
@@ -62,7 +64,10 @@ namespace Retro.Menu
         {
             _suppressCallbacks = true;
 
-            Configure(_fovSlider,         50f,  100f,  GameSettings.Fov,               false);
+            // A stored value outside the allowed range (e.g. from before the minimum was raised) is pulled into it.
+            if (GameSettings.Fov < _fovRange.x || GameSettings.Fov > _fovRange.y)
+                GameSettings.Fov = Mathf.Clamp(GameSettings.Fov, _fovRange.x, _fovRange.y);
+            Configure(_fovSlider,         _fovRange.x, _fovRange.y, GameSettings.Fov,               false);
             Configure(_sensitivitySlider, 0.02f, 0.6f, GameSettings.Sensitivity,       false);
             Configure(_pixelSlider,       120f, 1080f, GameSettings.PixelHeight,       true);
             Configure(_scanlineSlider,    0f,   1f,    GameSettings.ScanlineIntensity, false);

@@ -1,0 +1,25 @@
+{
+    "name": "Retro.PauseMenu.Adapters.QuestSystem",
+    "rootNamespace": "Retro.Menu.Adapters",
+    "references": [
+        "Retro.PauseMenu",
+        "Retro.QuestSystem"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [
+        "RETRO_PAUSEMENU_QUEST"
+    ],
+    "versionDefines": [
+        {
+            "name": "com.retro.questsystem",
+            "expression": "",
+            "define": "RETRO_PAUSEMENU_QUEST"
+        }
+    ],
+    "noEngineReferences": false
+}

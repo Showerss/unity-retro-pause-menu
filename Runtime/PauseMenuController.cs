@@ -152,7 +152,7 @@ namespace Retro.Menu
 
         public void LoadFromSlot(int slot)
         {
-            if (SaveSystem.Load(slot)) Resume();
+            if (SaveSystem.RequestLoad(slot)) Resume();
             else Debug.LogWarning($"Save slot {slot} is empty or unreadable.");
         }
 

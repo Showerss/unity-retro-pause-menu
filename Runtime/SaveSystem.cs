@@ -56,8 +56,29 @@ namespace Retro.Menu
     {
         public const int SlotCount = 3;
 
+        /// <summary>Slot written by automatic saves, kept apart from the player's manual slots.</summary>
+        public const int AutosaveSlot = -1;
+
+        /// <summary>
+        /// Optional replacement for <see cref="Load"/> when the menu asks to load, e.g. a game that
+        /// reloads its scene first so destroyed pickups and one-shot events come back before restoring.
+        /// Return true if the load is under way. Leave null to restore in place.
+        /// </summary>
+        public static Func<int, bool> LoadHandler { get; set; }
+
+        /// <summary>Raised with the slot after a save is written to disk.</summary>
+        public static event Action<int> Saved;
+
         static string PathForSlot(int slot) =>
-            Path.Combine(Application.persistentDataPath, $"save_{slot}.json");
+            Path.Combine(Application.persistentDataPath, slot == AutosaveSlot ? "autosave.json" : $"save_{slot}.json");
+
+        // Static state survives play mode when domain reload is off; never inherit a dead game's hooks.
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        static void ResetStatics()
+        {
+            LoadHandler = null;
+            Saved = null;
+        }
 
         public static bool SlotExists(int slot) => File.Exists(PathForSlot(slot));
 
@@ -107,6 +128,7 @@ namespace Retro.Menu
             {
                 File.WriteAllText(PathForSlot(slot), JsonUtility.ToJson(data, true));
                 Debug.Log($"Saved slot {slot} -> {PathForSlot(slot)}");
+                Saved?.Invoke(slot);
                 return true;
             }
             catch (Exception e)
@@ -116,6 +138,10 @@ namespace Retro.Menu
             }
         }
 
+        /// <summary>Loads through <see cref="LoadHandler"/> if one is set, otherwise restores in place.</summary>
+        public static bool RequestLoad(int slot) => LoadHandler != null ? LoadHandler(slot) : Load(slot);
+
+        /// <summary>Restores every registered participant from the slot, in place, without changing scenes.</summary>
         public static bool Load(int slot)
         {
             SaveData data = Peek(slot);
