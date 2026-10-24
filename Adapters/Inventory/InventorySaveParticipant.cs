@@ -34,7 +34,10 @@ namespace Retro.Menu.Adapters
         [Tooltip("Required to turn saved item ids back into ItemDefinition assets.")]
         [SerializeField] private ItemDatabase _database;
 
-        public string SaveKey => "inventory";
+        [Tooltip("Unique key in the save file. Give each inventory on the player its own (e.g. 'inventory', 'inventory_lights').")]
+        [SerializeField] private string _saveKey = "inventory";
+
+        public string SaveKey => _saveKey;
 
         void Awake()
         {
