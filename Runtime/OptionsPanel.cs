@@ -17,6 +17,8 @@ namespace Retro.Menu
         [SerializeField] private Vector2 _fovRange = new Vector2(50f, 100f);
         [SerializeField] private Slider _sensitivitySlider;
         [SerializeField] private TextMeshProUGUI _sensitivityValue;
+        [SerializeField] private Slider _shakeSlider;
+        [SerializeField] private TextMeshProUGUI _shakeValue;
 
         [Header("Retro Look")]
         [SerializeField] private Slider _pixelSlider;
@@ -44,6 +46,7 @@ namespace Retro.Menu
         {
             Bind(_fovSlider,         v => GameSettings.Fov = v,               on);
             Bind(_sensitivitySlider, v => GameSettings.Sensitivity = v,       on);
+            Bind(_shakeSlider,       v => GameSettings.ScreenShake = v,       on);
             Bind(_pixelSlider,       v => GameSettings.PixelHeight = (int)v,  on);
             Bind(_scanlineSlider,    v => GameSettings.ScanlineIntensity = v, on);
             Bind(_vignetteSlider,    v => GameSettings.VignetteIntensity = v, on);
@@ -69,6 +72,7 @@ namespace Retro.Menu
                 GameSettings.Fov = Mathf.Clamp(GameSettings.Fov, _fovRange.x, _fovRange.y);
             Configure(_fovSlider,         _fovRange.x, _fovRange.y, GameSettings.Fov,               false);
             Configure(_sensitivitySlider, 0.02f, 0.6f, GameSettings.Sensitivity,       false);
+            Configure(_shakeSlider,       0f,   1f,    GameSettings.ScreenShake,       false);
             Configure(_pixelSlider,       120f, 1080f, GameSettings.PixelHeight,       true);
             Configure(_scanlineSlider,    0f,   1f,    GameSettings.ScanlineIntensity, false);
             Configure(_vignetteSlider,    0f,   1f,    GameSettings.VignetteIntensity, false);
@@ -91,6 +95,7 @@ namespace Retro.Menu
         {
             SetLabel(_fovValue,         $"{GameSettings.Fov:0}");
             SetLabel(_sensitivityValue, $"{GameSettings.Sensitivity:0.00}");
+            SetLabel(_shakeValue,       $"{GameSettings.ScreenShake * 100f:0}%");
             SetLabel(_pixelValue,       $"{GameSettings.PixelHeight}p");
             SetLabel(_scanlineValue,    $"{GameSettings.ScanlineIntensity * 100f:0}%");
             SetLabel(_vignetteValue,    $"{GameSettings.VignetteIntensity * 100f:0}%");

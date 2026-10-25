@@ -94,6 +94,7 @@ it and nothing breaks.
 | `FirstPersonControllerAdapter` | `com.firstperson.controller` | Player | Disables controller + PlayerInput on pause; applies FOV and mouse sensitivity |
 | `InventorySaveParticipant` | `com.retro.inventory` | The `InventorySystem` object | Writes inventory contents into the save file |
 | `RetroPS1SettingsTarget` | `com.retro.ps1postprocess` | Any scene object | Drives pixel height, scanlines and vignette from the options sliders |
+| `ScreenShakeSettingsTarget` | `com.retro.combat` | Next to `SettingsApplier` | Drives `ScreenShake.Strength` from the Screen Shake slider |
 | `LightSwitchSaveState` | `com.firstperson.controller` | A `LightSwitch` with a `SaveableObject` | Saves whether the lamp is lit |
 | `QuestSaveParticipant` | `com.retro.questsystem` | The `QuestManager` object | Saves chapter, quest and objective progress |
 | `QuestAutosave` | `com.retro.questsystem` | The `QuestManager` object | Autosaves on objective / quest / chapter completion |

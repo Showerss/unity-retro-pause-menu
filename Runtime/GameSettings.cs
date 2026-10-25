@@ -17,6 +17,7 @@ namespace Retro.Menu
         const string ScanlineKey    = "retro.scanlines";
         const string VignetteKey    = "retro.vignette";
         const string VolumeKey      = "retro.volume";
+        const string ShakeKey       = "retro.screenShake";
 
         static float _fov         = 60f;
         static float _sensitivity = 0.15f;
@@ -24,6 +25,7 @@ namespace Retro.Menu
         static float _scanlines   = 0.18f;
         static float _vignette    = 0.35f;
         static float _volume      = 1f;
+        static float _shake       = 1f;
 
         static bool _loaded;
 
@@ -65,6 +67,13 @@ namespace Retro.Menu
             set { Load(); _volume = Mathf.Clamp01(value); Raise(); }
         }
 
+        /// <summary>Impact camera shake multiplier. 0 turns it off for players prone to motion sickness.</summary>
+        public static float ScreenShake
+        {
+            get { Load(); return _shake; }
+            set { Load(); _shake = Mathf.Clamp01(value); Raise(); }
+        }
+
         static void Load()
         {
             if (_loaded) return;
@@ -76,6 +85,7 @@ namespace Retro.Menu
             _scanlines   = PlayerPrefs.GetFloat(ScanlineKey, _scanlines);
             _vignette    = PlayerPrefs.GetFloat(VignetteKey, _vignette);
             _volume      = PlayerPrefs.GetFloat(VolumeKey, _volume);
+            _shake       = PlayerPrefs.GetFloat(ShakeKey, _shake);
         }
 
         static void Raise()
@@ -86,6 +96,7 @@ namespace Retro.Menu
             PlayerPrefs.SetFloat(ScanlineKey, _scanlines);
             PlayerPrefs.SetFloat(VignetteKey, _vignette);
             PlayerPrefs.SetFloat(VolumeKey, _volume);
+            PlayerPrefs.SetFloat(ShakeKey, _shake);
             PlayerPrefs.Save();
 
             OnChanged?.Invoke();
@@ -101,6 +112,7 @@ namespace Retro.Menu
             _scanlines = 0.18f;
             _vignette = 0.35f;
             _volume = 1f;
+            _shake = 1f;
             Raise();
         }
     }

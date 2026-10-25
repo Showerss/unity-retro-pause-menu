@@ -1,0 +1,25 @@
+{
+    "name": "Retro.PauseMenu.Adapters.Combat",
+    "rootNamespace": "Retro.Menu.Adapters",
+    "references": [
+        "Retro.PauseMenu",
+        "Retro.Combat"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [
+        "RETRO_PAUSEMENU_COMBAT"
+    ],
+    "versionDefines": [
+        {
+            "name": "com.retro.combat",
+            "expression": "",
+            "define": "RETRO_PAUSEMENU_COMBAT"
+        }
+    ],
+    "noEngineReferences": false
+}

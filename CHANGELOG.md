@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- `GameSettings.ScreenShake` (0..1, default 1) with an Options slider, and the `ScreenShakeSettingsTarget` combat adapter.
 - `InventorySaveParticipant._saveKey`: each inventory on the player can save under its own key (default stays `inventory`).
 
 ## [1.2.0] - 2026-10-16
