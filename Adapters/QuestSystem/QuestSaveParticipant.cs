@@ -116,7 +116,9 @@ namespace Retro.Menu.Adapters
 
             ChapterDefinition chapter = FindChapter(state.chapterId);
             if (chapter != null) _quests.StartChapter(chapter);
+            else _quests.ClearActiveQuest();
 
+            DestroyRestoredClone();
             QuestDefinition activeClone = null;
             if (!string.IsNullOrEmpty(state.questId))
             {
@@ -127,7 +129,6 @@ namespace Retro.Menu.Adapters
                 }
                 else
                 {
-                    DestroyRestoredClone();
                     activeClone = Instantiate(authored);
                     activeClone.name = authored.name + " (Runtime)";
                     activeClone.ResetAllObjectives();
