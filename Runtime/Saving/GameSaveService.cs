@@ -113,8 +113,7 @@ namespace Retro.Menu
 
             _loadingSlot = slot;
             IsRestoring = true;
-            ApplyLoadedSlot();
-            return true;
+            return ApplyLoadedSlot();
         }
 
         private IEnumerator ReloadAndRestore(int slot, string sceneName)
@@ -149,18 +148,22 @@ namespace Retro.Menu
             ApplyLoadedSlot();
         }
 
-        private void ApplyLoadedSlot()
+        private bool ApplyLoadedSlot()
         {
             _autosavePending = false;
+            int slot = _loadingSlot;
+            bool success;
             try
             {
-                SaveSystem.Load(_loadingSlot);
+                success = SaveSystem.Load(slot);
             }
             finally
             {
                 IsRestoring = false;
             }
-            Restored?.Invoke();
+            if (success) Restored?.Invoke();
+            SaveSystem.NotifyLoadCompleted(slot, success);
+            return success;
         }
 
         // Static state survives play mode when domain reload is off.

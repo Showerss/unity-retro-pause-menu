@@ -62,12 +62,16 @@ namespace Retro.Menu
         /// <summary>
         /// Optional replacement for <see cref="Load"/> when the menu asks to load, e.g. a game that
         /// reloads its scene first so destroyed pickups and one-shot events come back before restoring.
-        /// Return true if the load is under way. Leave null to restore in place.
+        /// Return true if the load is under way, then call <see cref="NotifyLoadCompleted"/> when it finishes.
+        /// Return false if the request is rejected. Leave null to restore in place.
         /// </summary>
         public static Func<int, bool> LoadHandler { get; set; }
 
         /// <summary>Raised with the slot after a save is written to disk.</summary>
         public static event Action<int> Saved;
+
+        /// <summary>Raised with the slot and restoration result when a load request finishes.</summary>
+        public static event Action<int, bool> LoadCompleted;
 
         static string PathForSlot(int slot) =>
             Path.Combine(Application.persistentDataPath, slot == AutosaveSlot ? "autosave.json" : $"save_{slot}.json");
@@ -78,6 +82,7 @@ namespace Retro.Menu
         {
             LoadHandler = null;
             Saved = null;
+            LoadCompleted = null;
         }
 
         public static bool SlotExists(int slot) => File.Exists(PathForSlot(slot));
@@ -98,6 +103,12 @@ namespace Retro.Menu
 
         public static bool Save(int slot)
         {
+            if (GameSaveService.IsRestoring)
+            {
+                Debug.LogWarning("Cannot save while a load is in progress.");
+                return false;
+            }
+
             var data = new SaveData
             {
                 savedAtUtc = DateTime.UtcNow.ToString("o"),
@@ -106,17 +117,20 @@ namespace Retro.Menu
 
             foreach (ISaveParticipant participant in MenuRegistry.SaveParticipants)
             {
+                string key = "<unknown>";
                 try
                 {
+                    key = participant.SaveKey;
                     data.entries.Add(new SaveEntry
                     {
-                        key  = participant.SaveKey,
+                        key  = key,
                         json = participant.Capture(),
                     });
                 }
                 catch (Exception e)
                 {
-                    Debug.LogError($"Save participant '{participant.SaveKey}' threw while capturing: {e}");
+                    Debug.LogError($"Save participant '{key}' threw while capturing: {e}");
+                    return false;
                 }
             }
 
@@ -124,22 +138,65 @@ namespace Retro.Menu
                 Debug.LogWarning("Saving with no registered participants - the file will be empty. " +
                                  "Add a PlayerTransformSaveParticipant to your player, at minimum.");
 
+            string temporaryPath = null;
+            bool ownsTemporaryFile = false;
             try
             {
-                File.WriteAllText(PathForSlot(slot), JsonUtility.ToJson(data, true));
+                string json = JsonUtility.ToJson(data, true);
+                string destination = PathForSlot(slot);
+                temporaryPath = destination + "." + Guid.NewGuid().ToString("N") + ".tmp";
+                using (var stream = new FileStream(temporaryPath, FileMode.CreateNew, FileAccess.Write, FileShare.None))
+                {
+                    ownsTemporaryFile = true;
+                    using (var writer = new StreamWriter(stream))
+                    {
+                        writer.Write(json);
+                        writer.Flush();
+                        stream.Flush(true);
+                    }
+                }
+
+                if (File.Exists(destination)) File.Replace(temporaryPath, destination, null);
+                else File.Move(temporaryPath, destination);
+                ownsTemporaryFile = false;
                 Debug.Log($"Saved slot {slot} -> {PathForSlot(slot)}");
-                Saved?.Invoke(slot);
-                return true;
             }
             catch (Exception e)
             {
                 Debug.LogError($"SaveSystem.Save failed: {e.Message}");
                 return false;
             }
+            finally
+            {
+                if (ownsTemporaryFile)
+                {
+                    try { File.Delete(temporaryPath); }
+                    catch (Exception e)
+                    {
+                        Debug.LogWarning($"SaveSystem could not remove temporary file '{temporaryPath}': {e.Message}");
+                    }
+                }
+            }
+
+            Saved?.Invoke(slot);
+            return true;
         }
 
-        /// <summary>Loads through <see cref="LoadHandler"/> if one is set, otherwise restores in place.</summary>
-        public static bool RequestLoad(int slot) => LoadHandler != null ? LoadHandler(slot) : Load(slot);
+        /// <summary>
+        /// Loads through <see cref="LoadHandler"/> if set, otherwise restores in place.
+        /// True can mean an asynchronous request was accepted, not that restoration succeeded.
+        /// Listen to <see cref="LoadCompleted"/> for the final result.
+        /// </summary>
+        public static bool RequestLoad(int slot)
+        {
+            if (LoadHandler != null) return LoadHandler(slot);
+            bool success = Load(slot);
+            NotifyLoadCompleted(slot, success);
+            return success;
+        }
+
+        /// <summary>Called exactly once by a load handler after restoration finishes, including partial failure.</summary>
+        public static void NotifyLoadCompleted(int slot, bool success) => LoadCompleted?.Invoke(slot, success);
 
         /// <summary>Restores every registered participant from the slot, in place, without changing scenes.</summary>
         public static bool Load(int slot)
@@ -147,19 +204,25 @@ namespace Retro.Menu
             SaveData data = Peek(slot);
             if (data == null) return false;
 
+            bool success = true;
             foreach (ISaveParticipant participant in MenuRegistry.SaveParticipants)
             {
-                string json = data.Find(participant.SaveKey);
-                if (json == null) continue; // not in this save; leave the system alone
-
-                try { participant.Restore(json); }
+                string key = "<unknown>";
+                try
+                {
+                    key = participant.SaveKey;
+                    string json = data.Find(key);
+                    if (json == null) continue; // not in this save; leave the system alone
+                    participant.Restore(json);
+                }
                 catch (Exception e)
                 {
-                    Debug.LogError($"Save participant '{participant.SaveKey}' threw while restoring: {e}");
+                    success = false;
+                    Debug.LogError($"Save participant '{key}' threw while restoring: {e}");
                 }
             }
 
-            return true;
+            return success;
         }
 
         public static void Delete(int slot)

@@ -143,6 +143,27 @@ SaveSystem.Delete(0);
 `SaveKey`, and writes one JSON file per slot. `SaveSystem.AutosaveSlot` (-1) writes
 `autosave.json`, separate from the manual slots.
 
+Capture and serialization must complete before a slot is touched. Writes are staged beside
+the slot and atomically replace it; a failed capture or write returns `false`, preserves the
+previous slot, and does not raise `Saved`. Platforms without safe file replacement fail the
+save rather than falling back to overwriting the slot.
+
+`Load` returns `false` if any participant fails. Other participants are still attempted;
+already-applied changes are not rolled back. `GameSaveService.Restored` fires only after
+all restoration succeeds, with `IsRestoring` cleared as before.
+
+Use `SaveSystem.RequestLoad(slot)` for menu-style loading. Its return value can mean only
+that an asynchronous request was accepted. Subscribe to `SaveSystem.LoadCompleted`
+(`slot`, `success`) for the final result; the pause menu resumes only on successful
+completion and warns on failure. Custom `LoadHandler`s must call
+`SaveSystem.NotifyLoadCompleted(slot, success)` exactly once when an accepted request
+finishes. Direct `Load` calls continue to return their result without a request notification.
+
+`Save` rejects writes while `GameSaveService.IsRestoring`, before capturing participants
+or touching disk. While a menu load is pending, saving, panel navigation, Escape,
+resume, additional loads, and quit are blocked. Completion releases the menu guard
+on both success and failure.
+
 ### Scene-aware saving (optional)
 
 For a game with a persistent Boot scene that loads gameplay scenes additively:

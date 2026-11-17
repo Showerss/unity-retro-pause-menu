@@ -39,6 +39,9 @@ namespace Retro.Menu
         [SerializeField] private bool _lockCursorOnResume = true;
 
         float _timeScaleBeforePause = 1f;
+        int? _pendingLoadSlot;
+
+        bool IsLoadInProgress => _pendingLoadSlot.HasValue || GameSaveService.IsRestoring;
 
         void Awake()
         {
@@ -50,12 +53,15 @@ namespace Retro.Menu
 
         void OnDestroy()
         {
+            SaveSystem.LoadCompleted -= HandleLoadCompleted;
             // If we are torn down mid-pause, don't leave the game frozen forever.
             if (IsPaused) RestoreTime();
         }
 
         void Update()
         {
+            if (IsLoadInProgress) return;
+
             // Read the keyboard directly rather than through a PlayerInput action:
             // adapters typically disable PlayerInput while paused, so an Esc binding
             // routed through it could never un-pause us.
@@ -72,7 +78,7 @@ namespace Retro.Menu
 
         public void Pause()
         {
-            if (IsPaused) return;
+            if (IsPaused || IsLoadInProgress) return;
             IsPaused = true;
 
             _timeScaleBeforePause = Time.timeScale;
@@ -92,7 +98,7 @@ namespace Retro.Menu
 
         public void Resume()
         {
-            if (!IsPaused) return;
+            if (!IsPaused || IsLoadInProgress) return;
             IsPaused = false;
 
             RestoreTime();
@@ -137,6 +143,8 @@ namespace Retro.Menu
 
         void ShowOnly(GameObject panel)
         {
+            if (IsLoadInProgress) return;
+
             if (_mainPanel    != null) _mainPanel.SetActive(panel == _mainPanel);
             if (_optionsPanel != null) _optionsPanel.SetActive(panel == _optionsPanel);
             if (_savePanel    != null) _savePanel.SetActive(panel == _savePanel);
@@ -147,17 +155,41 @@ namespace Retro.Menu
 
         public void SaveToSlot(int slot)
         {
+            if (IsLoadInProgress)
+            {
+                Debug.LogWarning("Cannot save while a load is in progress.");
+                return;
+            }
+
             if (SaveSystem.Save(slot)) ShowOnly(_mainPanel);
         }
 
         public void LoadFromSlot(int slot)
         {
-            if (SaveSystem.RequestLoad(slot)) Resume();
-            else Debug.LogWarning($"Save slot {slot} is empty or unreadable.");
+            if (IsLoadInProgress) return;
+            _pendingLoadSlot = slot;
+            SaveSystem.LoadCompleted += HandleLoadCompleted;
+            if (!SaveSystem.RequestLoad(slot) && _pendingLoadSlot.HasValue)
+            {
+                SaveSystem.LoadCompleted -= HandleLoadCompleted;
+                _pendingLoadSlot = null;
+                Debug.LogWarning($"Could not start loading save slot {slot}.");
+            }
+        }
+
+        void HandleLoadCompleted(int slot, bool success)
+        {
+            if (_pendingLoadSlot != slot) return;
+            SaveSystem.LoadCompleted -= HandleLoadCompleted;
+            _pendingLoadSlot = null;
+            if (success) Resume();
+            else Debug.LogWarning($"Save slot {slot} could not be fully restored. The world may be partially changed.");
         }
 
         public void QuitGame()
         {
+            if (IsLoadInProgress) return;
+
             RestoreTime();
 #if UNITY_EDITOR
             UnityEditor.EditorApplication.isPlaying = false;

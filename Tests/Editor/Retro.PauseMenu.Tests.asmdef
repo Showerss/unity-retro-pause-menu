@@ -1,0 +1,12 @@
+{
+    "name": "Retro.PauseMenu.Tests",
+    "references": [
+        "Retro.PauseMenu"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "optionalUnityReferences": [
+        "TestAssemblies"
+    ]
+}
